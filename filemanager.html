@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Filemanager</title>
+<link rel="stylesheet" type="text/css" media="screen" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/themes/smoothness/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+<link rel="stylesheet" type="text/css" media="screen" href="elfinder/css/elfinder.min.css">
+<link rel="stylesheet" type="text/css" media="screen" href="elfinder/css/theme.css">
+<style>
+html, body, #finder{
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0 !important;
+  margin: 0;
+}
+</style>
+<script src="elfinder/js/elfinder.min.js"></script>
+
+
+
+<script src=tinymce/tinymce.min.js></script>
+<script>
+
+tinymce.init({
+  plugins: "fullscreen image link lists advlist paste preview table textcolor wordcount contextmenu media code",
+  contextmenu: "link image inserttable | cell row column deletetable",
+  toolbar: 'undo redo | insertfile link image | bold italic forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+  file_browser_callback: function(field_name, url, type, win) {
+    tinymce.activeEditor.windowManager.open({
+      file: window.location.pathname,
+      title: 'filemanager',
+      width: $(window).width(),
+      height: $(window).height(),
+      resizable: 'yes'
+    }, {
+      setUrl: function (url) {
+        win.document.getElementById(field_name).value = url;
+      }
+    });
+    return false;
+  }
+});
+
+
+
+var FileBrowserDialogue = {
+  init: function() {
+    // Here goes your code for setting your custom things onLoad.
+  },
+  mySubmit: function (URL) {
+    // pass selected file path to TinyMCE
+    parent.tinymce.activeEditor.windowManager.getParams().setUrl(URL);
+
+    // close popup window
+    parent.tinymce.activeEditor.windowManager.close();
+  }
+}
+$(function(){
+
+  var customData = {};
+  if (/startPath=([^;&?]+)/.test(location.hash)) {
+    customData.startPath = unescape(RegExp.$1);
+  }
+  if (/basePath=([^;&?]+)/.test(location.hash)) {
+    customData.basePath = unescape(RegExp.$1);
+  }
+
+  $('#finder').elfinder({
+    height: 'auto', resizable: false,
+    url: 'elfinder/php/connector.php',
+    rememberLastDir: false,
+    useBrowserHistory: false,
+    getFileCallback : function(file) {
+      FileBrowserDialogue.mySubmit(file); 
+    },
+    customData: customData,
+    commandsOptions: {
+      edit : {
+        mimes : ['text/plain', 'text/html', 'text/javascript'],
+        editors : [
+          { mimes : ['text/html'],  //types to edit with tinyMCE
+            load : function(textarea) {
+              tinymce.execCommand('mceAddEditor', false, textarea.id);
+            },
+            close : function(textarea, instance) {
+              tinymce.execCommand('mceRemoveEditor', false, textarea.id);
+            },
+            save : function(textarea, editor) {
+              textarea.value = tinyMCE.get(textarea.id).selection.getContent({format : 'html'});
+              tinymce.execCommand('mceRemoveEditor', false, textarea.id);
+            }
+          }
+        ]
+      }
+    }
+  });
+});
+</script>
+
+
+</head>
+<body>
+<div id=finder></div>
+</body>
+</html>

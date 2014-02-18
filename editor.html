@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="tinymce/tinymce.min.js"></script>
+<script>
+
+var fileman_path = location.pathname.replace(/editor\.html.*/,'filemanager.html');
+if (location.hash != '') {
+  fileman_path += '#' + location.hash;
+}
+
+tinymce.init({
+  selector: "#editor",
+  plugins: "fullscreen image link lists advlist paste preview table textcolor wordcount contextmenu media code",
+  contextmenu: "link image inserttable | cell row column deletetable",
+  toolbar: 'undo redo | insertfile link image | bold italic forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+  init_instance_callback: function(e) {
+    setTimeout(function(){ e.execCommand('mceFullScreen'); }, 10);
+  },
+  file_browser_callback: function(field_name, url, type, win) {
+    var w = window, d = document, e = d.documentElement,
+      g = d.getElementsByTagName('body')[0],
+      x = w.innerWidth || e.clientWidth || g.clientWidth,
+      y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+    tinymce.activeEditor.windowManager.open({
+      file: fileman_path,
+      title: 'filemanager',
+      width: x - 20,
+      height: y - 80,
+      resizable: 'yes'
+    }, {
+      setUrl: function (url) {
+        win.document.getElementById(field_name).value = url;
+      }
+    });
+    return false;
+  }
+});
+</script>
+</head>
+<body>
+<body>
+<div id=editor></div>
+</body>
+</html>
